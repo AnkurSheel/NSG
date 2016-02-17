@@ -8,7 +8,7 @@ public class Movement : MonoBehaviour
   public float duration = 5.0f;
   public bool useConstantSpeed = true;
 
-  Vector3 originalPosition; 
+  Vector3 originalPosition;
   Vector3 targetPosition;
   PathManager pathManager;
   Rotation sphereRotation;
@@ -100,7 +100,7 @@ public class Movement : MonoBehaviour
           }
           else
           {
-            float step = speed * alpha * Time.deltaTime;
+            float step = speed * Time.deltaTime;
             newPos = Vector3.MoveTowards(transform.position, targetPosition, step);
           }
         }
@@ -128,8 +128,6 @@ public class Movement : MonoBehaviour
     alpha = alpha * alpha * alpha;
     alpha = 1.0f - alpha;
     alpha = Mathf.Clamp(alpha, 0.0f, 1.0f);
-    Debug.Log("alpha: " + alpha);
     return alpha;
   }
-
 }
