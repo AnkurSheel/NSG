@@ -12,7 +12,7 @@ public class Movement : MonoBehaviour
   // Use this for initialization
   void Start()
   {
-    targetPosition = cube.transform.position;
+    targetPosition = transform.position;
   }
 
   // Update is called once per frame
@@ -26,14 +26,21 @@ public class Movement : MonoBehaviour
       if (Physics.Raycast(ray, out hit))
       {
         targetPosition = hit.point;
-        targetPosition.z = cube.transform.position.z;
+        Debug.DrawLine(transform.position, targetPosition, Color.red, 30);
+        targetPosition = transform.position - targetPosition;
+        Debug.DrawLine(transform.position, targetPosition, Color.blue, 30);
       }
     }
-    if(cube.transform.position != targetPosition)
+    if (transform.position != targetPosition)
     {
       float step = speed * Time.deltaTime;
-      cube.transform.position = Vector3.MoveTowards(cube.transform.position, targetPosition, step);
-      sceneCamera.transform.position = new Vector3(cube.transform.position.x, cube.transform.position.y, sceneCamera.transform.position.z);
+      transform.position = Vector3.MoveTowards(transform.position, targetPosition, step);
     }
+//     if(cube.transform.position != targetPosition)
+//     {
+//       float step = speed * Time.deltaTime;
+//       cube.transform.position = Vector3.MoveTowards(cube.transform.position, targetPosition, step);
+//       sceneCamera.transform.position = new Vector3(cube.transform.position.x, cube.transform.position.y, sceneCamera.transform.position.z);
+//     }
   }
 }
