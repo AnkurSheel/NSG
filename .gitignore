@@ -4,3 +4,4 @@ Assembly*
 *.userprefs
 /Library
 *.csproj
+*.suo
