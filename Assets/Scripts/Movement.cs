@@ -5,16 +5,23 @@ public class Movement : MonoBehaviour
 {
   public GameObject sphere;
   public float speed = 5;
-  public float pathDepth = -0.2f;
+  public float duration = 5.0f;
+  public bool useConstantSpeed = true;
+
+  Vector3 originalPosition; 
   Vector3 targetPosition;
+  PathManager pathManager;
+  Rotation sphereRotation;
+  float elapsedTime;
   bool isDragging = false;
   bool isMouseDown = false;
-  PathManager pathManager;
+  bool isDirty = false;
 
   void Start()
   {
     targetPosition = transform.position;
     pathManager = GetComponent<PathManager>();
+    sphereRotation = sphere.GetComponent<Rotation>();
     Reset();
   }
 
@@ -46,6 +53,7 @@ public class Movement : MonoBehaviour
         }
         else
         {
+          isDirty = true;
           pathManager.Reset();
           pathManager.AddDragPoint();
         }
@@ -53,14 +61,9 @@ public class Movement : MonoBehaviour
     }
     else if (isMouseDown)
     {
-     
       isMouseDown = false;
       isDragging = false;
     }
-  }
-
-  public void FixedUpdate()
-  {
     MoveObject();
   }
 
@@ -72,26 +75,61 @@ public class Movement : MonoBehaviour
   private void Reset()
   {
     pathManager.Reset();
+    elapsedTime = 0.0f;
   }
 
   private void MoveObject()
   {
     if (!isDragging)
     {
-      if (transform.position != targetPosition)
+      if (!isDirty && transform.position != targetPosition)
       {
-        float step = speed * Time.fixedDeltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, targetPosition, step);
+        Vector3 newPos = Vector3.zero;
+        if (useConstantSpeed)
+        {
+          float step = speed * Time.fixedDeltaTime;
+          newPos = Vector3.MoveTowards(transform.position, targetPosition, step);
+        }
+        else
+        {
+          elapsedTime += Time.deltaTime;
+          float alpha = GetTweenFactorCubic();
+          if (alpha < 1.0f && !pathManager.HasNextPoint())
+          {
+            newPos = originalPosition * (1.0f - alpha) + (targetPosition * alpha);
+          }
+          else
+          {
+            float step = speed * alpha * Time.deltaTime;
+            newPos = Vector3.MoveTowards(transform.position, targetPosition, step);
+          }
+        }
+        sphereRotation.Move(newPos - transform.position);
+        transform.position = newPos;
         pathManager.SetOffset(transform.position);
       }
       else if (pathManager.HasNextPoint())
       {
+        isDirty = false;
+        originalPosition = transform.position;
         targetPosition = pathManager.GetNextPoint();
       }
       else
       {
+        sphereRotation.IsMoving = false;
         pathManager.OnFinishedMoving();
       }
     }
   }
+
+  private float GetTweenFactorCubic()
+  {
+    float alpha = 1.0f - elapsedTime / duration;
+    alpha = alpha * alpha * alpha;
+    alpha = 1.0f - alpha;
+    alpha = Mathf.Clamp(alpha, 0.0f, 1.0f);
+    Debug.Log("alpha: " + alpha);
+    return alpha;
+  }
+
 }
