@@ -6,19 +6,15 @@ public class Movement : MonoBehaviour
   public GameObject sphere;
   public float speed = 5;
   public float pathDepth = -0.2f;
-  public int skipPointCount = 7;
   Vector3 targetPosition;
-  ArrayList dragPoints = new ArrayList();
-  int CurrentDragPointIndex;
   bool isDragging = false;
   bool isMouseDown = false;
-  PathRenderer pathRenderer;
-  int currentPointCount;
+  PathManager pathManager;
 
   void Start()
   {
     targetPosition = transform.position;
-    pathRenderer = Camera.main.GetComponent<PathRenderer>();
+    pathManager = GetComponent<PathManager>();
     Reset();
   }
 
@@ -41,8 +37,7 @@ public class Movement : MonoBehaviour
         {
           if (HasPointerMoved())
           {
-            AddDragPoint();
-            DrawLine();
+            pathManager.AddDragPoint();
           }
         }
         else if (hit.collider.gameObject == sphere)
@@ -51,16 +46,16 @@ public class Movement : MonoBehaviour
         }
         else
         {
-          dragPoints.Clear();
-          AddDragPoint();
+          pathManager.Reset();
+          pathManager.AddDragPoint();
         }
       }
     }
     else if (isMouseDown)
     {
-      if(isDragging)
+      if (isDragging)
       {
-        AddDragPoint(true);
+        pathManager.AddDragPoint(true);
       }
       isMouseDown = false;
       isDragging = false;
@@ -72,35 +67,14 @@ public class Movement : MonoBehaviour
     MoveObject();
   }
 
-  private void AddDragPoint(bool force = false)
-  {
-    if(force || ((currentPointCount % skipPointCount) == 0))
-    {
-      Vector3 mPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, -Camera.main.transform.position.z);
-      Vector3 worldPoint = Camera.main.ScreenToWorldPoint(mPosition);
-      worldPoint = transform.position - worldPoint;
-      dragPoints.Add(worldPoint);
-    }
-    currentPointCount++;
-  }
-
   private bool HasPointerMoved()
   {
     return Input.GetAxis("Mouse X") != 0.0f || Input.GetAxis("Mouse Y") != 0.0f;
   }
 
-  private void DrawLine()
-  {
-    Vector3 worldPoint = (Vector3)dragPoints[dragPoints.Count - 1];
-    pathRenderer.AddPoint(worldPoint);
-  }
-
   private void Reset()
   {
-    dragPoints.Clear();
-    pathRenderer.Reset();
-    CurrentDragPointIndex = 0;
-    currentPointCount = 0;
+    pathManager.Reset();
   }
 
   private void MoveObject()
@@ -111,16 +85,15 @@ public class Movement : MonoBehaviour
       {
         float step = speed * Time.fixedDeltaTime;
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, step);
-        pathRenderer.BackgroundPosition = transform.position;
+        pathManager.SetOffset(transform.position);
       }
-      else if (CurrentDragPointIndex < dragPoints.Count)
+      else if (pathManager.HasNextPoint())
       {
-        targetPosition = (Vector3)dragPoints[CurrentDragPointIndex];
-        CurrentDragPointIndex++;
+        targetPosition = pathManager.GetNextPoint();
       }
       else
       {
-        pathRenderer.Reset();
+        pathManager.OnFinishedMoving();
       }
     }
   }

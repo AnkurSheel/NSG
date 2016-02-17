@@ -7,11 +7,11 @@ public class PathRenderer : MonoBehaviour
   public float lineDepth = -0.2f;
   public Material lineMat;
   ArrayList points = new ArrayList();
-  Vector3 backgroundPosition;
+  Vector3 offset;
 
-  public Vector3 BackgroundPosition
+  public Vector3 Offset
   {
-    set { backgroundPosition = value; }
+    set { offset = value; }
   }
 
   public void AddPoint(Vector3 point)
@@ -40,8 +40,8 @@ public class PathRenderer : MonoBehaviour
         GL.Begin(GL.LINES);
         lineMat.SetPass(0);
         GL.Color(lineMat.color);
-        GL.Vertex3(backgroundPosition.x - prevPointPos.x, backgroundPosition.y - prevPointPos.y, lineDepth);
-        GL.Vertex3(backgroundPosition.x - pointPos.x, backgroundPosition.y - pointPos.y, lineDepth);
+        GL.Vertex3(offset.x - prevPointPos.x, offset.y - prevPointPos.y, lineDepth);
+        GL.Vertex3(offset.x - pointPos.x, offset.y - pointPos.y, lineDepth);
         GL.End();
         prevPointPos = pointPos;
       }
