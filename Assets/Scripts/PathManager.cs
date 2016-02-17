@@ -23,7 +23,6 @@ public class PathManager : MonoBehaviour
       worldPoint = transform.position - worldPoint;
       dragPoints.Add(worldPoint);
       pathRenderer.AddPoint(worldPoint);
-
     }
     currentPointCount++;
   }

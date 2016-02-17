@@ -53,10 +53,7 @@ public class Movement : MonoBehaviour
     }
     else if (isMouseDown)
     {
-      if (isDragging)
-      {
-        pathManager.AddDragPoint(true);
-      }
+     
       isMouseDown = false;
       isDragging = false;
     }
