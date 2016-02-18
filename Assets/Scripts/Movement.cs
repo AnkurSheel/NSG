@@ -6,7 +6,7 @@ public class Movement : MonoBehaviour
   public GameObject sphere;
   public float speed = 5;
   public float duration = 5.0f;
-  public float minTimeForLastNode = 0.5f;
+  public float minTweenTimeForLastNode = 0.5f;
   public bool useConstantSpeed = true;
 
   Vector3 originalPosition;
@@ -87,6 +87,7 @@ public class Movement : MonoBehaviour
   private void Reset()
   {
     pathManager.Reset();
+    targetPosition = transform.position;
     elapsedTime = 0.0f;
     tweenDuration = duration;
   }
@@ -131,7 +132,7 @@ public class Movement : MonoBehaviour
         if (!pathManager.HasNextPoint() && pathManager.GetNumberOfPoints() > 1)
         {
           elapsedTime = 0.0f;
-          tweenDuration = minTimeForLastNode;
+          tweenDuration = minTweenTimeForLastNode;
         }
       }
       else

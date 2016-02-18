@@ -33,9 +33,9 @@ public class PathRenderer : MonoBehaviour
     }
     if (points.Count > 1)
     {
-      foreach (Vector3 point in points)
+      for (int i = 1; i < points.Count; i++)
       {
-        Vector3 pointPos = point;
+        Vector3 pointPos = (Vector3)points[i];
 
         GL.Begin(GL.LINES);
         lineMat.SetPass(0);

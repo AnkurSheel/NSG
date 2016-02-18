@@ -172,7 +172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b571492343103ea4abe2ba7970f606db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isRotateAllowed: 0
+  isRotateAllowed: 1
   speed: 360
 --- !u!1 &452874665
 GameObject:
@@ -425,7 +425,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sphere: {fileID: 421951586}
   speed: 5
-  duration: 3
+  duration: 1.5
+  minTweenTimeForLastNode: 0.5
+  useConstantSpeed: 0
 --- !u!114 &1134974100
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -437,4 +439,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d024d45deff3b7b46a8901a8b1f36247, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skipPointCount: 4
+  skipPointCount: 1
