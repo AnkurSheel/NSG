@@ -3,22 +3,22 @@ using System.Collections;
 
 public class Movement : MonoBehaviour
 {
-  public GameObject sphere;
-  public float speed = 5;
-  public float duration = 5.0f;
-  public float minTweenTimeForLastNode = 0.5f;
-  public bool useConstantSpeed = true;
+  public GameObject m_sphere;
+  public float m_speed = 5;
+  public float m_duration = 5.0f;
+  public float m_minTweenTimeForLastNode = 0.5f;
+  public bool m_useConstantSpeed = true;
 
-  Vector3 originalPosition;
-  Vector3 targetPosition;
-  PathManager pathManager;
-  Rotation sphereRotation;
-  Collider coll;
-  float elapsedTime;
-  float tweenDuration;
-  bool isDragging = false;
-  bool isTouchDown = false;
-  bool isDirty = false;
+  Vector3 m_originalPosition;
+  Vector3 m_targetPosition;
+  PathManager m_pathManager;
+  Rotation m_sphereRotation;
+  Collider m_coll;
+  float m_elapsedTime;
+  float m_tweenDuration;
+  bool m_isDragging = false;
+  bool m_isTouchDown = false;
+  bool m_isDirty = false;
 
   private bool IsTouch()
   {
@@ -37,10 +37,10 @@ public class Movement : MonoBehaviour
 
   void Start()
   {
-    targetPosition = transform.position;
-    pathManager = GetComponent<PathManager>();
-    sphereRotation = sphere.GetComponent<Rotation>();
-    coll = GetComponent<Collider>();
+    m_targetPosition = transform.position;
+    m_pathManager = GetComponent<PathManager>();
+    m_sphereRotation = m_sphere.GetComponent<Rotation>();
+    m_coll = GetComponent<Collider>();
     Reset();
   }
 
@@ -50,7 +50,7 @@ public class Movement : MonoBehaviour
     {
       OnTouch();
     }
-    else if (isTouchDown)
+    else if (m_isTouchDown)
     {
       OnTouchReleased();
     }
@@ -59,17 +59,17 @@ public class Movement : MonoBehaviour
 
   private void Reset()
   {
-    pathManager.Reset();
-    targetPosition = transform.position;
-    elapsedTime = 0.0f;
-    tweenDuration = duration;
+    m_pathManager.Reset();
+    m_targetPosition = transform.position;
+    m_elapsedTime = 0.0f;
+    m_tweenDuration = m_duration;
   }
 
   private void OnTouch()
   {
-    if (!isTouchDown)
+    if (!m_isTouchDown)
     {
-      isTouchDown = true;
+      m_isTouchDown = true;
       Reset();
     }
 
@@ -80,7 +80,7 @@ public class Movement : MonoBehaviour
     {
       OnClickedOnBackground(hit.collider);
     }
-    else if (!isDragging)
+    else if (!m_isDragging)
     {
       OnClickedOutside();
     }
@@ -88,64 +88,64 @@ public class Movement : MonoBehaviour
 
   private void OnTouchReleased()
   {
-    isTouchDown = false;
-    isDragging = false;
+    m_isTouchDown = false;
+    m_isDragging = false;
   }
 
   private void MoveObject()
   {
-    if (!isDragging)
+    if (!m_isDragging)
     {
-      if (!isDirty && transform.position != targetPosition)
+      if (!m_isDirty && transform.position != m_targetPosition)
       {
         Vector3 newPos = Vector3.zero;
-        if (useConstantSpeed)
+        if (m_useConstantSpeed)
         {
-          float step = speed * Time.fixedDeltaTime;
-          newPos = Vector3.MoveTowards(transform.position, targetPosition, step);
+          float step = m_speed * Time.fixedDeltaTime;
+          newPos = Vector3.MoveTowards(transform.position, m_targetPosition, step);
         }
         else
         {
-          elapsedTime += Time.deltaTime;
+          m_elapsedTime += Time.deltaTime;
           float alpha = GetTweenFactorCubic();
-          if (alpha < 1.0f && !pathManager.HasNextPoint())
+          if (alpha < 1.0f && !m_pathManager.HasNextPoint())
           {
-            newPos = originalPosition * (1.0f - alpha) + (targetPosition * alpha);
+            newPos = m_originalPosition * (1.0f - alpha) + (m_targetPosition * alpha);
           }
           else
           {
-            float step = speed * Time.deltaTime;
-            newPos = Vector3.MoveTowards(transform.position, targetPosition, step);
+            float step = m_speed * Time.deltaTime;
+            newPos = Vector3.MoveTowards(transform.position, m_targetPosition, step);
           }
         }
-        sphereRotation.Move(newPos - transform.position);
+        m_sphereRotation.Move(newPos - transform.position);
         transform.position = newPos;
-        pathManager.SetOffset(transform.position);
+        m_pathManager.SetOffset(transform.position);
       }
-      else if (pathManager.HasNextPoint())
+      else if (m_pathManager.HasNextPoint())
       {
-        isDirty = false;
-        originalPosition = transform.position;
-        targetPosition = pathManager.GetNextPoint();
+        m_isDirty = false;
+        m_originalPosition = transform.position;
+        m_targetPosition = m_pathManager.GetNextPoint();
 
         // this is a hack to make sure we decelerate while dragging
-        if (!pathManager.HasNextPoint() && pathManager.GetNumberOfPoints() > 1)
+        if (!m_pathManager.HasNextPoint() && m_pathManager.GetNumberOfPoints() > 1)
         {
-          elapsedTime = 0.0f;
-          tweenDuration = minTweenTimeForLastNode;
+          m_elapsedTime = 0.0f;
+          m_tweenDuration = m_minTweenTimeForLastNode;
         }
       }
       else
       {
-        pathManager.OnFinishedMoving();
+        m_pathManager.OnFinishedMoving();
       }
     }
   }
 
   private float GetTweenFactorCubic()
   {
-    elapsedTime = Mathf.Clamp(elapsedTime, 0.0f, tweenDuration);
-    float alpha = 1.0f - elapsedTime / tweenDuration;
+    m_elapsedTime = Mathf.Clamp(m_elapsedTime, 0.0f, m_tweenDuration);
+    float alpha = 1.0f - m_elapsedTime / m_tweenDuration;
     alpha = alpha * alpha * alpha;
     alpha = 1.0f - alpha;
     return alpha;
@@ -153,22 +153,22 @@ public class Movement : MonoBehaviour
 
   private void OnClickedOnBackground(Collider collider)
   {
-    if (isDragging)
+    if (m_isDragging)
     {
       if (IsTouchMoving())
       {
-        pathManager.AddDragPoint();
+        m_pathManager.AddDragPoint();
       }
     }
-    else if (collider.gameObject == sphere)
+    else if (collider.gameObject == m_sphere)
     {
-      isDragging = true;
+      m_isDragging = true;
     }
     else
     {
-      isDirty = true;
+      m_isDirty = true;
       Reset();
-      pathManager.AddDragPoint();
+      m_pathManager.AddDragPoint();
     }
   }
 
@@ -176,7 +176,7 @@ public class Movement : MonoBehaviour
   {
     Vector3 mPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, -Camera.main.transform.position.z);
     Vector3 worldPoint = Camera.main.ScreenToWorldPoint(mPosition);
-    Vector3 closestPoint = coll.ClosestPointOnBounds(worldPoint);
-    pathManager.AddDragPoint(closestPoint);
+    Vector3 closestPoint = m_coll.ClosestPointOnBounds(worldPoint);
+    m_pathManager.AddDragPoint(closestPoint);
   }
 }

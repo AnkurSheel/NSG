@@ -272,8 +272,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04339841fcb70824fafadf796a9f1ba2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lineDepth: -0.2
-  lineMat: {fileID: 2100000, guid: f634e9d2caac1124095b533954d2549a, type: 2}
+  m_lineDepth: -0.2
+  m_lineMat: {fileID: 2100000, guid: f634e9d2caac1124095b533954d2549a, type: 2}
 --- !u!1 &810968555
 GameObject:
   m_ObjectHideFlags: 0
@@ -423,11 +423,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8debf5ea336244b43a02c3927b1f1ba4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sphere: {fileID: 421951586}
-  speed: 5
-  duration: 1.5
-  minTweenTimeForLastNode: 0.5
-  useConstantSpeed: 0
+  m_sphere: {fileID: 421951586}
+  m_speed: 5
+  m_duration: 1.5
+  m_minTweenTimeForLastNode: 0.5
+  m_useConstantSpeed: 0
 --- !u!114 &1134974100
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -439,4 +439,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d024d45deff3b7b46a8901a8b1f36247, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  skipPointCount: 1
+  m_skipPointCount: 1
