@@ -59,4 +59,9 @@ public class PathManager : MonoBehaviour
   {
     pathRenderer.Offset = offset;
   }
+
+  public int GetNumberOfPoints()
+  {
+    return dragPoints.Count;
+  }
 }

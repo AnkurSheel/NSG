@@ -6,6 +6,7 @@ public class Movement : MonoBehaviour
   public GameObject sphere;
   public float speed = 5;
   public float duration = 5.0f;
+  public float minTimeForLastNode = 0.5f;
   public bool useConstantSpeed = true;
 
   Vector3 originalPosition;
@@ -13,6 +14,7 @@ public class Movement : MonoBehaviour
   PathManager pathManager;
   Rotation sphereRotation;
   float elapsedTime;
+  float tweenDuration;
   bool isDragging = false;
   bool isMouseDown = false;
   bool isDirty = false;
@@ -86,6 +88,7 @@ public class Movement : MonoBehaviour
   {
     pathManager.Reset();
     elapsedTime = 0.0f;
+    tweenDuration = duration;
   }
 
   private void MoveObject()
@@ -123,6 +126,13 @@ public class Movement : MonoBehaviour
         isDirty = false;
         originalPosition = transform.position;
         targetPosition = pathManager.GetNextPoint();
+
+        // this is a hack to make sure we decelerate while dragging
+        if (!pathManager.HasNextPoint() && pathManager.GetNumberOfPoints() > 1)
+        {
+          elapsedTime = 0.0f;
+          tweenDuration = minTimeForLastNode;
+        }
       }
       else
       {
@@ -133,10 +143,10 @@ public class Movement : MonoBehaviour
 
   private float GetTweenFactorCubic()
   {
-    float alpha = 1.0f - elapsedTime / duration;
+    elapsedTime = Mathf.Clamp(elapsedTime, 0.0f, tweenDuration);
+    float alpha = 1.0f - elapsedTime / tweenDuration;
     alpha = alpha * alpha * alpha;
     alpha = 1.0f - alpha;
-    alpha = Mathf.Clamp(alpha, 0.0f, 1.0f);
     return alpha;
   }
 }
