@@ -5,3 +5,4 @@ Assembly*
 /Library
 *.csproj
 *.suo
+Builds/
