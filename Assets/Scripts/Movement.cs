@@ -27,7 +27,7 @@ public class Movement : MonoBehaviour
 
   void Update()
   {
-    if (Input.GetMouseButton(0))
+    if (IsTouch())
     {
       if (!isMouseDown)
       {
@@ -35,14 +35,14 @@ public class Movement : MonoBehaviour
         Reset();
       }
 
-      Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+      Ray ray = Camera.main.ScreenPointToRay(GetTouchPosition());
       RaycastHit hit;
 
       if (Physics.Raycast(ray, out hit))
       {
         if (isDragging)
         {
-          if (HasPointerMoved())
+          if (IsTouchMoving())
           {
             pathManager.AddDragPoint();
           }
@@ -54,7 +54,7 @@ public class Movement : MonoBehaviour
         else
         {
           isDirty = true;
-          pathManager.Reset();
+          Reset();
           pathManager.AddDragPoint();
         }
       }
@@ -67,9 +67,19 @@ public class Movement : MonoBehaviour
     MoveObject();
   }
 
-  private bool HasPointerMoved()
+  private bool IsTouch()
+  {
+    return Input.GetMouseButton(0);
+  }
+
+  private bool IsTouchMoving()
   {
     return Input.GetAxis("Mouse X") != 0.0f || Input.GetAxis("Mouse Y") != 0.0f;
+  }
+
+  Vector3 GetTouchPosition()
+  {
+    return Input.mousePosition;
   }
 
   private void Reset()
@@ -116,7 +126,6 @@ public class Movement : MonoBehaviour
       }
       else
       {
-        sphereRotation.IsMoving = false;
         pathManager.OnFinishedMoving();
       }
     }
