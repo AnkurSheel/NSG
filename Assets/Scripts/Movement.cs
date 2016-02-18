@@ -20,7 +20,8 @@ public class Movement : MonoBehaviour
   bool m_isTouchDown = false;
   bool m_isDirty = false;
 
-  private bool IsTouch()
+  #region Input
+  bool IsTouch()
   {
     return Input.GetMouseButton(0);
   }
@@ -30,10 +31,11 @@ public class Movement : MonoBehaviour
     return Input.mousePosition;
   }
 
-  private bool IsTouchMoving()
+  bool IsTouchMoving()
   {
     return Input.GetAxis("Mouse X") != 0.0f || Input.GetAxis("Mouse Y") != 0.0f;
   }
+  #endregion
 
   void Start()
   {
@@ -54,10 +56,14 @@ public class Movement : MonoBehaviour
     {
       OnTouchReleased();
     }
-    MoveObject();
+
+    if (!m_isDragging)
+    {
+      MoveObject();
+    }
   }
 
-  private void Reset()
+  void Reset()
   {
     m_pathManager.Reset();
     m_targetPosition = transform.position;
@@ -65,7 +71,7 @@ public class Movement : MonoBehaviour
     m_tweenDuration = m_duration;
   }
 
-  private void OnTouch()
+  void OnTouch()
   {
     if (!m_isTouchDown)
     {
@@ -86,72 +92,13 @@ public class Movement : MonoBehaviour
     }
   }
 
-  private void OnTouchReleased()
+  void OnTouchReleased()
   {
     m_isTouchDown = false;
     m_isDragging = false;
   }
 
-  private void MoveObject()
-  {
-    if (!m_isDragging)
-    {
-      if (!m_isDirty && transform.position != m_targetPosition)
-      {
-        Vector3 newPos = Vector3.zero;
-        if (m_useConstantSpeed)
-        {
-          float step = m_speed * Time.fixedDeltaTime;
-          newPos = Vector3.MoveTowards(transform.position, m_targetPosition, step);
-        }
-        else
-        {
-          m_elapsedTime += Time.deltaTime;
-          float alpha = GetTweenFactorCubic();
-          if (alpha < 1.0f && !m_pathManager.HasNextPoint())
-          {
-            newPos = m_originalPosition * (1.0f - alpha) + (m_targetPosition * alpha);
-          }
-          else
-          {
-            float step = m_speed * Time.deltaTime;
-            newPos = Vector3.MoveTowards(transform.position, m_targetPosition, step);
-          }
-        }
-        m_sphereRotation.Move(newPos - transform.position);
-        transform.position = newPos;
-        m_pathManager.SetOffset(transform.position);
-      }
-      else if (m_pathManager.HasNextPoint())
-      {
-        m_isDirty = false;
-        m_originalPosition = transform.position;
-        m_targetPosition = m_pathManager.GetNextPoint();
-
-        // this is a hack to make sure we decelerate while dragging
-        if (!m_pathManager.HasNextPoint() && m_pathManager.GetNumberOfPoints() > 1)
-        {
-          m_elapsedTime = 0.0f;
-          m_tweenDuration = m_minTweenTimeForLastNode;
-        }
-      }
-      else
-      {
-        m_pathManager.OnFinishedMoving();
-      }
-    }
-  }
-
-  private float GetTweenFactorCubic()
-  {
-    m_elapsedTime = Mathf.Clamp(m_elapsedTime, 0.0f, m_tweenDuration);
-    float alpha = 1.0f - m_elapsedTime / m_tweenDuration;
-    alpha = alpha * alpha * alpha;
-    alpha = 1.0f - alpha;
-    return alpha;
-  }
-
-  private void OnClickedOnBackground(Collider collider)
+  void OnClickedOnBackground(Collider collider)
   {
     if (m_isDragging)
     {
@@ -172,11 +119,89 @@ public class Movement : MonoBehaviour
     }
   }
 
-  private void OnClickedOutside()
+  void OnClickedOutside()
   {
+    m_isDirty = true;
+    Reset();
     Vector3 mPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, -Camera.main.transform.position.z);
     Vector3 worldPoint = Camera.main.ScreenToWorldPoint(mPosition);
     Vector3 closestPoint = m_coll.ClosestPointOnBounds(worldPoint);
     m_pathManager.AddDragPoint(closestPoint);
+  }
+
+  void MoveObject()
+  {
+    if (!m_isDirty && transform.position != m_targetPosition)
+    {
+      MoveToTargetPosition();
+    }
+    else if (m_pathManager.HasNextPoint())
+    {
+      SetTargetPositionFromPathNode();
+    }
+    else
+    {
+      m_pathManager.OnFinishedMoving();
+    }
+  }
+
+  void MoveToTargetPosition()
+  {
+    Vector3 newPos = Vector3.zero;
+    if (m_useConstantSpeed)
+    {
+      newPos = CalculatePositionOnConstantSpeed();
+    }
+    else
+    {
+      newPos = CalculatePositionOnTween();
+    }
+    m_sphereRotation.Move(newPos - transform.position);
+    transform.position = newPos;
+    m_pathManager.SetOffset(transform.position);
+  }
+
+  void SetTargetPositionFromPathNode()
+  {
+    m_isDirty = false;
+    m_originalPosition = transform.position;
+    m_targetPosition = m_pathManager.GetNextPoint();
+
+    // this is a hack to make sure we decelerate while dragging
+    if (!m_pathManager.HasNextPoint() && m_pathManager.GetNumberOfPoints() > 1)
+    {
+      m_elapsedTime = 0.0f;
+      m_tweenDuration = m_minTweenTimeForLastNode;
+    }
+  }
+
+  Vector3 CalculatePositionOnConstantSpeed()
+  {
+    float step = m_speed * Time.fixedDeltaTime;
+    return Vector3.MoveTowards(transform.position, m_targetPosition, step);
+  }
+
+  Vector3 CalculatePositionOnTween()
+  {
+    m_elapsedTime += Time.deltaTime;
+    float alpha = GetTweenFactorCubic();
+    if (alpha < 1.0f && !m_pathManager.HasNextPoint())
+    {
+      return (m_originalPosition * (1.0f - alpha) + (m_targetPosition * alpha));
+    }
+    else
+    {
+      float step = m_speed * Time.deltaTime;
+      return Vector3.MoveTowards(transform.position, m_targetPosition, step);
+    }
+  }
+
+  float GetTweenFactorCubic()
+  {
+    m_elapsedTime = Mathf.Clamp(m_elapsedTime, 0.0f, m_tweenDuration);
+    float alpha = 1.0f - m_elapsedTime / m_tweenDuration;
+    alpha = alpha * alpha * alpha;
+    alpha = 1.0f - alpha;
+    return alpha;
   }
 }
