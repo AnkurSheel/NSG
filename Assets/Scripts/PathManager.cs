@@ -29,7 +29,10 @@ public class PathManager : MonoBehaviour
 
   public void Reset()
   {
-    pathRenderer.Reset();
+    if(pathRenderer)
+    {
+      pathRenderer.Reset();
+    }
     dragPoints.Clear();
     CurrentDragPointIndex = 0;
     currentPointCount = 0;
