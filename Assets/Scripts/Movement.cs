@@ -13,65 +13,21 @@ public class Movement : MonoBehaviour
   Vector3 targetPosition;
   PathManager pathManager;
   Rotation sphereRotation;
+  Collider coll;
   float elapsedTime;
   float tweenDuration;
   bool isDragging = false;
-  bool isMouseDown = false;
+  bool isTouchDown = false;
   bool isDirty = false;
-
-  void Start()
-  {
-    targetPosition = transform.position;
-    pathManager = GetComponent<PathManager>();
-    sphereRotation = sphere.GetComponent<Rotation>();
-    Reset();
-  }
-
-  void Update()
-  {
-    if (IsTouch())
-    {
-      if (!isMouseDown)
-      {
-        isMouseDown = true;
-        Reset();
-      }
-
-      Ray ray = Camera.main.ScreenPointToRay(GetTouchPosition());
-      RaycastHit hit;
-
-      if (Physics.Raycast(ray, out hit))
-      {
-        if (isDragging)
-        {
-          if (IsTouchMoving())
-          {
-            pathManager.AddDragPoint();
-          }
-        }
-        else if (hit.collider.gameObject == sphere)
-        {
-          isDragging = true;
-        }
-        else
-        {
-          isDirty = true;
-          Reset();
-          pathManager.AddDragPoint();
-        }
-      }
-    }
-    else if (isMouseDown)
-    {
-      isMouseDown = false;
-      isDragging = false;
-    }
-    MoveObject();
-  }
 
   private bool IsTouch()
   {
     return Input.GetMouseButton(0);
+  }
+
+  Vector3 GetTouchPosition()
+  {
+    return Input.mousePosition;
   }
 
   private bool IsTouchMoving()
@@ -79,9 +35,26 @@ public class Movement : MonoBehaviour
     return Input.GetAxis("Mouse X") != 0.0f || Input.GetAxis("Mouse Y") != 0.0f;
   }
 
-  Vector3 GetTouchPosition()
+  void Start()
   {
-    return Input.mousePosition;
+    targetPosition = transform.position;
+    pathManager = GetComponent<PathManager>();
+    sphereRotation = sphere.GetComponent<Rotation>();
+    coll = GetComponent<Collider>();
+    Reset();
+  }
+
+  void Update()
+  {
+    if (IsTouch())
+    {
+      OnTouch();
+    }
+    else if (isTouchDown)
+    {
+      OnTouchReleased();
+    }
+    MoveObject();
   }
 
   private void Reset()
@@ -90,6 +63,33 @@ public class Movement : MonoBehaviour
     targetPosition = transform.position;
     elapsedTime = 0.0f;
     tweenDuration = duration;
+  }
+
+  private void OnTouch()
+  {
+    if (!isTouchDown)
+    {
+      isTouchDown = true;
+      Reset();
+    }
+
+    Ray ray = Camera.main.ScreenPointToRay(GetTouchPosition());
+    RaycastHit hit;
+
+    if (Physics.Raycast(ray, out hit))
+    {
+      OnClickedOnBackground(hit.collider);
+    }
+    else if (!isDragging)
+    {
+      OnClickedOutside();
+    }
+  }
+
+  private void OnTouchReleased()
+  {
+    isTouchDown = false;
+    isDragging = false;
   }
 
   private void MoveObject()
@@ -149,5 +149,34 @@ public class Movement : MonoBehaviour
     alpha = alpha * alpha * alpha;
     alpha = 1.0f - alpha;
     return alpha;
+  }
+
+  private void OnClickedOnBackground(Collider collider)
+  {
+    if (isDragging)
+    {
+      if (IsTouchMoving())
+      {
+        pathManager.AddDragPoint();
+      }
+    }
+    else if (collider.gameObject == sphere)
+    {
+      isDragging = true;
+    }
+    else
+    {
+      isDirty = true;
+      Reset();
+      pathManager.AddDragPoint();
+    }
+  }
+
+  private void OnClickedOutside()
+  {
+    Vector3 mPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, -Camera.main.transform.position.z);
+    Vector3 worldPoint = Camera.main.ScreenToWorldPoint(mPosition);
+    Vector3 closestPoint = coll.ClosestPointOnBounds(worldPoint);
+    pathManager.AddDragPoint(closestPoint);
   }
 }

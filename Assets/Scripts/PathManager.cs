@@ -20,10 +20,19 @@ public class PathManager : MonoBehaviour
     {
       Vector3 mPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, -Camera.main.transform.position.z);
       Vector3 worldPoint = Camera.main.ScreenToWorldPoint(mPosition);
-      worldPoint = transform.position - worldPoint;
-      pathPoints.Add(worldPoint);
-      pathRenderer.AddPoint(worldPoint);
+      AddDragPoint(worldPoint);
     }
+    else
+    {
+      numberOfPathNodesAdded++;
+    }
+  }
+
+  public void AddDragPoint(Vector3 worldPoint)
+  {
+    worldPoint = transform.position - worldPoint;
+    pathPoints.Add(worldPoint);
+    pathRenderer.AddPoint(worldPoint);
     numberOfPathNodesAdded++;
   }
 
